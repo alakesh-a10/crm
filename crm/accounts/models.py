@@ -1,4 +1,4 @@
-import email
+from itertools import product
 from pyexpat import model
 from sre_constants import CATEGORY
 from django.db import models
@@ -26,13 +26,23 @@ class products(models.Model):
     def __str__(self):
         return self.name
 
+class tag(models.Model):
+    tname=models.CharField(max_length=200, null=True)
+    
+    def __str__(self):
+        return self.tname
+
 class order(models.Model):
     STATUS=(
         ('Pending','Pending'),
         ('Out for Delivery', 'Out for Delivery'),
         ('Delivered','Delivered')
     )
-    #customer
-    #product
+    customer=models.ForeignKey(customer, null=True, on_delete=models.SET_NULL)
+    product=models.ForeignKey(products, null=True, on_delete=models.SET_NULL)
     date_created=models.DateTimeField(auto_now_add=True, null=True)
     status=models.CharField(max_length=200, null=True, choices=STATUS)
+    tags=models.ManyToManyField(tag)
+
+    def __str__(self):
+        return self.status
