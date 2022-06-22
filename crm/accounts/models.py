@@ -1,6 +1,3 @@
-from itertools import product
-from pyexpat import model
-from sre_constants import CATEGORY
 from django.db import models
 
 class customer(models.Model):
