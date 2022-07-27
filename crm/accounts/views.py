@@ -1,11 +1,44 @@
-from multiprocessing import context
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from .models import * 
 from .forms import *
- 
+
 
 # Create your views here.
+def register(request):
+    form=createUserForm()
+    if request.method=='POST':
+        form=createUserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.info(request, "User has been created")
+            return redirect('login')
+        else:
+            print("Form validation fails!!")
+    context={'form':form}
+    return render(request, 'accounts/register.html', context)
+
+def userlogin(request):
+    if request.method=='POST':
+        username=request.POST.get('username')
+        password=request.POST.get('password')
+        User= authenticate(username=username, password=password)
+        print(username, password,User)
+        if User is not None:
+            login(request, User)
+            return redirect('home')
+        else:
+            messages.info(request, "Username or password is incorrect")
+    context={}
+    return render(request, 'accounts/login.html', context)
+def userlogout(request):
+    logout(request)
+    return redirect('login')
+
+@login_required(login_url='login')
 def index(request):
     all_cust=customer.objects.all()
     all_orders=order.objects.all()
@@ -69,7 +102,7 @@ def updateCustomer(request, c_id):
         new_cust=customerForm(request.POST, instance=c_data)
         if new_cust.is_valid:
             new_cust.save()
-            return redirect('/')
+            return Customer(request, c_id)
     context={'c_data':cust_form}
     return render(request, 'accounts/cust_form.html', context)
 
